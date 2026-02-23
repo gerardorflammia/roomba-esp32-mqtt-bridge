@@ -6,7 +6,7 @@
 
 An ESP32-based firmware that turns an **iRobot Roomba 500 Series** into a WiFi-connected smart vacuum, fully controllable through **Home Assistant** and **Node-RED** via MQTT.
 
-This project was developed as part of a university thesis on embedded systems and home automation.
+
 
 ---
 
