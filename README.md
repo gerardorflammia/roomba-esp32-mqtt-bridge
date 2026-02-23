@@ -192,21 +192,28 @@ Paste the content of `ha_config_backups/dpad_manual_card.yaml` into a Manual Car
 
 ### Home Assistant — Desktop Dashboard
 
-![Home Assistant Desktop](docs/images/ha_desktop.png)
+<p align="center">
+  <img src="docs/images/ha_desktop.png" width="800" alt="Home Assistant Desktop Dashboard">
+</p>
 
 ### Home Assistant — Mobile App
 
-| Sensors & Vacuum | Manual Controls |
-|---|---|
-| ![Mobile Sensors](docs/images/mobile_sensors.png) | ![Mobile Controls](docs/images/mobile_controls.png) |
+<p align="center">
+  <img src="docs/images/mobile_sensors.jpg" width="300" alt="Mobile Sensors">
+  <img src="docs/images/mobile_controls.jpg" width="300" alt="Mobile D-Pad Controls">
+</p>
 
 ### Node-RED — Automation Flow
 
-![Node-RED Flow](docs/images/nodered_flow.png)
+<p align="center">
+  <img src="docs/images/nodered_flow.png" width="800" alt="Node-RED Automation Flow">
+</p>
 
 ### Node-RED — Dashboard Buttons
 
-![Node-RED Dashboard](docs/images/nodered_dashboard.png)
+<p align="center">
+  <img src="docs/images/nodered_dashboard.png" width="800" alt="Node-RED Dashboard">
+</p>
 
 ---
 
