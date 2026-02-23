@@ -1,0 +1,8 @@
+.pio/
+.vscode/
+.cache/
+.agent/
+compile_commands.json
+reporte_sesion_debug.txt
+*.DS_Store
+Thumbs.db
