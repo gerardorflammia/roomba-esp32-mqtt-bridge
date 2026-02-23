@@ -1,0 +1,18 @@
+mqtt:
+  vacuum:
+    - name: "Roomba ESP32"
+      command_topic: "roomba/commands"
+      payload_clean_spot: "spot"
+      payload_return_to_base: "dock"
+      payload_start: "start"
+      payload_stop: "stop"
+
+  sensor:
+    - name: "Roomba Battery"
+      state_topic: "roomba/estado"
+      unit_of_measurement: "%"
+      device_class: battery
+      value_template: "{{ value_json.battery_level }}"
+    - name: "Roomba Status"
+      state_topic: "roomba/estado"
+      value_template: "{{ value_json.status }}"

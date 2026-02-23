@@ -1,0 +1,76 @@
+type: grid
+square: true
+columns: 3
+cards:
+  - type: button
+    tap_action:
+      action: call-service
+      service: script.roomba_forward_left
+    show_name: false
+    icon: mdi:arrow-top-left-bold-outline
+    hold_action:
+      action: none
+  - type: button
+    tap_action:
+      action: call-service
+      service: script.roomba_forward
+    show_name: false
+    icon: mdi:arrow-up-bold
+    hold_action:
+      action: none
+  - type: button
+    tap_action:
+      action: call-service
+      service: script.roomba_forward_right
+    show_name: false
+    icon: mdi:arrow-top-right-bold-outline
+    hold_action:
+      action: none
+  - type: button
+    tap_action:
+      action: call-service
+      service: script.roomba_left
+    show_name: false
+    icon: mdi:arrow-left-bold
+    hold_action:
+      action: none
+  - type: button
+    tap_action:
+      action: call-service
+      service: script.roomba_stop
+    show_name: false
+    icon: mdi:stop
+    hold_action:
+      action: none
+  - type: button
+    tap_action:
+      action: call-service
+      service: script.roomba_right
+    show_name: false
+    icon: mdi:arrow-right-bold
+    hold_action:
+      action: none
+  - type: button
+    tap_action:
+      action: call-service
+      service: script.roomba_backward_left
+    show_name: false
+    icon: mdi:arrow-bottom-left-bold-outline
+    hold_action:
+      action: none
+  - type: button
+    tap_action:
+      action: call-service
+      service: script.roomba_backward
+    show_name: false
+    icon: mdi:arrow-down-bold
+    hold_action:
+      action: none
+  - type: button
+    tap_action:
+      action: call-service
+      service: script.roomba_backward_right
+    show_name: false
+    icon: mdi:arrow-bottom-right-bold-outline
+    hold_action:
+      action: none

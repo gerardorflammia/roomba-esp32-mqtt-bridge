@@ -1,0 +1,98 @@
+roomba_forward:
+  alias: "Roomba: Forward"
+  icon: mdi:arrow-up-bold
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "forward"
+
+roomba_backward:
+  alias: "Roomba: Backward"
+  icon: mdi:arrow-down-bold
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "backward"
+
+roomba_left:
+  alias: "Roomba: Turn Left"
+  icon: mdi:arrow-left-bold
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "left"
+
+roomba_right:
+  alias: "Roomba: Turn Right"
+  icon: mdi:arrow-right-bold
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "right"
+
+roomba_stop:
+  alias: "Roomba: Stop"
+  icon: mdi:stop
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "stop"
+
+roomba_forward_left:
+  alias: "Roomba: Diagonal Forward-Left"
+  icon: mdi:arrow-top-left-bold-outline
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "forward_left"
+
+roomba_forward_right:
+  alias: "Roomba: Diagonal Forward-Right"
+  icon: mdi:arrow-top-right-bold-outline
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "forward_right"
+
+roomba_backward_left:
+  alias: "Roomba: Diagonal Backward-Left"
+  icon: mdi:arrow-bottom-left-bold-outline
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "backward_left"
+
+roomba_backward_right:
+  alias: "Roomba: Diagonal Backward-Right"
+  icon: mdi:arrow-bottom-right-bold-outline
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "backward_right"
+
+roomba_starwars:
+  alias: "Roomba: Star Wars"
+  icon: mdi:music-note
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "starwars"
+
+roomba_mario:
+  alias: "Roomba: Mario Bros"
+  icon: mdi:gamepad-variant
+  sequence:
+    - service: mqtt.publish
+      data:
+        topic: "roomba/commands"
+        payload: "mario"
