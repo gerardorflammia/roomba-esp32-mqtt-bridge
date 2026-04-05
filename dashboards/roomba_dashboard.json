@@ -1,0 +1,171 @@
+[
+    {
+        "id": "tab_roomba",
+        "type": "tab",
+        "label": "Roomba Dashboard",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "group_controls",
+        "type": "ui_group",
+        "z": "tab_roomba",
+        "name": "Comandos Básicos",
+        "tab": "ui_tab_home",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ui_tab_home",
+        "type": "ui_tab",
+        "z": "tab_roomba",
+        "name": "Robot Vacuum",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "btn_wake",
+        "type": "ui_button",
+        "z": "tab_roomba",
+        "name": "",
+        "group": "group_controls",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "DESPERTAR (Start)",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#28a745",
+        "icon": "fa-power-off",
+        "payload": "start",
+        "payloadType": "str",
+        "topic": "roomba/commands",
+        "x": 130,
+        "y": 80,
+        "wires": [
+            [
+                "mqtt_out_commands"
+            ]
+        ]
+    },
+    {
+        "id": "btn_clean",
+        "type": "ui_button",
+        "z": "tab_roomba",
+        "name": "",
+        "group": "group_controls",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "LIMPIAR (Clean)",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#007bff",
+        "icon": "fa-play",
+        "payload": "clean",
+        "payloadType": "str",
+        "topic": "roomba/commands",
+        "x": 130,
+        "y": 140,
+        "wires": [
+            [
+                "mqtt_out_commands"
+            ]
+        ]
+    },
+    {
+        "id": "btn_dock",
+        "type": "ui_button",
+        "z": "tab_roomba",
+        "name": "",
+        "group": "group_controls",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "BASE (Dock)",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#ffc107",
+        "icon": "fa-home",
+        "payload": "dock",
+        "payloadType": "str",
+        "topic": "roomba/commands",
+        "x": 130,
+        "y": 200,
+        "wires": [
+            [
+                "mqtt_out_commands"
+            ]
+        ]
+    },
+    {
+        "id": "btn_stop",
+        "type": "ui_button",
+        "z": "tab_roomba",
+        "name": "",
+        "group": "group_controls",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "PARAR (Stop)",
+        "tooltip": "",
+        "color": "white",
+        "bgcolor": "#dc3545",
+        "icon": "fa-stop",
+        "payload": "stop",
+        "payloadType": "str",
+        "topic": "roomba/commands",
+        "x": 130,
+        "y": 260,
+        "wires": [
+            [
+                "mqtt_out_commands"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_commands",
+        "type": "mqtt out",
+        "z": "tab_roomba",
+        "name": "Enviar a Roomba",
+        "topic": "roomba/commands",
+        "qos": "0",
+        "retain": "false",
+        "broker": "broker_local",
+        "x": 450,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "broker_local",
+        "type": "mqtt-broker",
+        "name": "MQTT Local (HA)",
+        "broker": "192.168.254.220",
+        "port": "1883",
+        "clientid": "nodered_roomba_dashboard",
+        "usetls": false,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": ""
+    }
+]

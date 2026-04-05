@@ -1,0 +1,114 @@
+BITÁCORA DE DESARROLLO E INTEGRACIÓN
+PROYECTO: Tesis Roomba ESP32 (Bridge MQTT)
+FECHA: 25 de Enero de 2026
+AUTOR: Equipo de Desarrollo (Usuario & Asistente AI)
+
+1. INTRODUCCIÓN
+Este documento registra las incidencias técnicas, diagnósticos y soluciones implementadas durante la fase de integración final del sistema de control WiFi para el robot Roomba serie 500, abarcando firmware (ESP32), middleware (MQTT) y frontend (Home Assistant).
+
+2. REGISTRO DE INCIDENCIAS
+
+--------------------------------------------------------------------------------
+INCIDENCIA #001: Fallo de Autenticación MQTT
+--------------------------------------------------------------------------------
+SÍNTOMA:
+El microcontrolador ESP32 iniciaba correctamente pero no lograba establecer conexión con el broker MQTT alojado en Home Assistant.
+Mensaje en Monitor Serial: `Attempting MQTT connection... failed, rc=-2` (o similar).
+
+DIAGNÓSTICO TÉCNICO:
+El broker MQTT oficial de Home Assistant ("Mosquitto Broker") requiere autenticación obligatoria por defecto para conexiones externas. El firmware original carecía de credenciales de usuario.
+
+ACCIÓN CORRECTIVA:
+1.  Creación de usuario en Home Assistant: Se generó el usuario `roomba` en el panel de administración (Ajustes > Personas > Usuarios).
+2.  Modificación de Firmware (`main.cpp`): Se añadieron las definiciones `mqtt_user` y `mqtt_password` y se actualizó la función `client.connect()` para incluir estos parámetros.
+
+--------------------------------------------------------------------------------
+INCIDENCIA #002: Error de Sintaxis YAML (Indentación)
+--------------------------------------------------------------------------------
+SÍNTOMA:
+Error de validación en `configuration.yaml` de Home Assistant:
+`Invalid config for 'mqtt' ... 'script' is an invalid option for 'mqtt'`.
+
+DIAGNÓSTICO TÉCNICO:
+Error de jerarquía en lenguaje YAML. El bloque `script:` fue insertado con una sangría inapropiada, quedando subordinado al bloque `mqtt:`. Home Assistant interpretó erróneamente que "script" era una propiedad de la integración MQTT.
+
+ACCIÓN CORRECTIVA:
+Se corrigió la indentación eliminando los espacios precedentes en la declaración `script:`, ubicándola en el nivel raíz del documento (root level), al mismo nivel que `mqtt:` y `default_config:`.
+
+--------------------------------------------------------------------------------
+INCIDENCIA #003: Colisión de Claves de Configuración (Duplicated Mapping Key)
+--------------------------------------------------------------------------------
+SÍNTOMA:
+Error crítico de configuración: `duplicated mapping key (30:1)`.
+
+DIAGNÓSTICO TÉCNICO:
+Redundancia en la definición de claves. El archivo `configuration.yaml` ya incluía la directiva `script: !include scripts.yaml` (Línea 11). Al intentar definir nuevamente `script:` manualmente (Línea 30), el parser YAML detectó una clave duplicada, lo cual es ilegal en la especificación.
+
+ACCIÓN CORRECTIVA:
+1.  Eliminación del bloque redundante `script:` en `configuration.yaml`.
+2.  Migración del código de los scripts al archivo dedicado `scripts.yaml`.
+3.  Ajuste de formato: En `scripts.yaml` se eliminó la clave raíz `script:`, definiendo directamente los identificadores de los scripts (`roomba_forward`, etc.), conforme a la estructura de archivos divididos de Home Assistant.
+
+--------------------------------------------------------------------------------
+INCIDENCIA #004: Vulnerabilidad en Lógica de Parada (Comando STOP)
+--------------------------------------------------------------------------------
+SÍNTOMA:
+Al implementar la función de control manual, el comando `stop` fue simplificado a `move(0,0)` (velocidad cero). Aunque el robot detenía su desplazamiento, los subsistemas de limpieza (cepillos y aspiradora) permanecían activos si el robot estaba en un ciclo de limpieza.
+
+DIAGNÓSTICO TÉCNICO:
+Según la especificación "iRobot Roomba Open Interface (OI)", enviar velocidad cero (Opcode 137) no cancela el modo "Clean" (Opcode 135). El robot entra en estado estacionario pero mantiene el modo activo.
+
+ACCIÓN CORRECTIVA:
+Implementación de una secuencia de parada de seguridad ("Fail-Safe Stop"):
+1.  Envío de Opcode 128 (Start) para reiniciar el intérprete OI.
+2.  Envío de Opcode 131 (Safe Mode) para forzar la salida del modo "Clean".
+3.  Envío de Opcode 137 (Drive) con parámetros 0,0 para asegurar frenado mecánico.
+
+--------------------------------------------------------------------------------
+INCIDENCIA #005: Limitaciones en Buffer de Audio (OI Spec)
+--------------------------------------------------------------------------------
+SÍNTOMA:
+El usuario solicitó extender la duración de las melodías. Se observó que canciones muy largas podían ser truncadas o no reproducirse.
+
+DIAGNÓSTICO TÉCNICO:
+La especificación OI limita la definición de canciones (Opcode 140) a un máximo de 16 notas por ranura de canción.
+
+ACCIÓN CORRECTIVA:
+Se optimizó la partitura de "Star Wars" para utilizar exactamente 16 notas, maximizando el uso del buffer disponible sin exceder el límite del protocolo serial del Roomba. Para "Mario Bros", se ajustó el *tempo* aumentando la duración (byte de tiempo) de cada nota, logrando una reproducción más pausada y reconocible.
+
+3. REFINAMIENTO DE CONTROL Y AUTOMATIZACIÓN (FASE 3)
+
+--------------------------------------------------------------------------------
+INCIDENCIA #006: Control Omnidireccional (Diagonales)
+--------------------------------------------------------------------------------
+SÍNTOMA:
+El control manual original (4 direcciones) limitaba la maniobrabilidad del robot en espacios complejos, obligando al usuario a alternar giros y avances ("tank controls") de forma poco fluida.
+
+SOLUCIÓN TÉCNICA:
+Se implementó un esquema de movimiento de 8 direcciones en el firmware (`move` function):
+1.  **Cálculo de Curvas:** Para las diagonales (`forward_left`, `forward_right`, etc.) se utilizó el comando `Drive` (Opcode 137) con un radio de 300mm. Esto permite que el robot avance mientras gira suavemente, en lugar de rotar sobre su propio eje (Radio 1 o -1).
+2.  **Integración UI:** Se actualizó la tarjeta Grid de Home Assistant a un esquema 3x3, mapeando los botones de las esquinas a los nuevos scripts diagonales.
+
+--------------------------------------------------------------------------------
+INCIDENCIA #007: Lógica Condicional en Programación (Node-RED)
+--------------------------------------------------------------------------------
+SÍNTOMA:
+El flujo de programación original (`node_red_flow.json`) incluía nodos de verificación de presencia ("House Occupied", "House Guests") que impedían la ejecución del programa de limpieza si la casa estaba ocupada o había invitados, lo cual no se ajustaba a los requisitos del usuario.
+
+SOLUCIÓN TÉCNICA:
+Se simplificó la lógica del flujo en Node-RED:
+1.  **Bypass de Condiciones:** Se eliminaron los nodos de estado (`api-current-state`) que consultaban `input_boolean.home_occupied` y `input_boolean.house_guests`.
+2.  **Cableado Directo:** El nodo `light-scheduler` se conectó directamente a la salida MQTT, garantizando que el comando `start` se envíe incondicionalmente a la hora programada.
+3.  **Limpieza de Configuración:** Se eliminaron nodos de configuración huérfanos generados por la importación de flujos redundantes.
+
+--------------------------------------------------------------------------------
+INCIDENCIA #008: Integridad de Configuraciones (Backups)
+--------------------------------------------------------------------------------
+ACCIÓN PREVENTIVA:
+Para asegurar la reproducibilidad de la tesis y facilitar la reintegración en caso de fallo, se creó un sistema de respaldo organizado en la carpeta `ha_config_backups`:
+-   `dpad_manual_card.yaml`: Configuración final de la interfaz de control (UI).
+-   `scripts.yaml`: Lógica de automatización completa.
+-   `configuration_roomba.yaml`: Definiciones base de MQTT y sensores.
+
+4. CONCLUSIONES FINALES
+La integración ha sido exitosa. El sistema cumple con los requisitos de seguridad (parada robusta), usabilidad (dashboard personalizado) y estabilidad (conexión MQTT autenticada).
