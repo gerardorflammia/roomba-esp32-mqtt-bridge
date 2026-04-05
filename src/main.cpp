@@ -1,22 +1,35 @@
-#include <Arduino.h>      // Librería base de Arduino para ESP32
-#include <ArduinoOTA.h>    // Librería para actualizaciones inalámbricas (Over-The-Air)
-#include <PubSubClient.h>  // Librería para el cliente MQTT
-#include <WiFi.h>          // Librería para la gestión de la conexión WiFi
+#include <Arduino.h>        // Librería base de Arduino para ESP32
+#include <WiFi.h>           // Gestión de conexión WiFi
+#include <PubSubClient.h>   // Cliente para comunicación MQTT
+#include <ArduinoJson.h>    // Procesamiento de mensajes JSON
+#include <ArduinoOTA.h>     // Actualizaciones de firmware inalámbricas
 
-// --- Credenciales y Configuración ---
-// Estas variables definen el acceso a la red local y al servidor domótico.
-const char *ssid = "MikroTik";                 // Nombre del punto de acceso WiFi
-const char *password = "12345678";             // Clave de seguridad de la red WiFi
-const char *mqtt_server = "192.168.10.5";       // IP del Broker (donde corre Home Assistant)
-const int mqtt_port = 1883;                    // Puerto de comunicación MQTT (estándar)
-// Credenciales para el acceso al servidor MQTT
-const char *mqtt_user = "roomba";              // Usuario configurado en Mosquitto
-const char *mqtt_password = "roomba";          // Contraseña configurada en Mosquitto
+// --- Sistema de Seguridad (Secretos) ---
+// El archivo include/secrets.h contiene tus datos reales y está ignorado por Git.
+#if __has_include("../include/secrets.h")
+  #include "../include/secrets.h"
+#elif __has_include("secrets.h")
+  #include "secrets.h"
+#else
+  // Valores por defecto (Placeholders para el repositorio público de GitHub)
+  #define SECRET_SSID "TU_SSID_WIFI"
+  #define SECRET_PASS "TU_PASSWORD_WIFI"
+  #define SECRET_MQTT_SERVER "0.0.0.0"
+  #define SECRET_MQTT_USER "TU_USUARIO_MQTT"
+  #define SECRET_MQTT_PASS "TU_PASSWORD_MQTT"
+#endif
+
+// --- Configuración de Red y MQTT ---
+const char *ssid = SECRET_SSID;               // Nombre de la red WiFi local
+const char *password = SECRET_PASS;           // Contraseña de la red WiFi
+const char *mqtt_server = SECRET_MQTT_SERVER; // Dirección IP del Broker MQTT
+const int mqtt_port = 1883;                  // Puerto estándar de comunicación
+const char *mqtt_user = SECRET_MQTT_USER;     // Usuario del broker MQTT
+const char *mqtt_password = SECRET_MQTT_PASS; // Contraseña del usuario MQTT
 
 // --- Topics MQTT ---
-// Los temas donde el ESP32 escucha órdenes y publica información.
-const char *topic_commands = "roomba/commands"; // Comandos entrantes (ej: start, stop)
-const char *topic_status = "roomba/estado";    // Estado saliente en formato JSON
+const char *topic_commands = "roomba/comandos"; // Escucha de órdenes desde Node-RED/HA
+const char *topic_state = "roomba/estado";      // Publicación de telemetría en JSON
 
 // --- Definición de Pines ---
 // Se utilizan pines específicos del ESP32 para la comunicación con el robot.
@@ -153,7 +166,7 @@ void loop() {
                  battery_percent, voltage, statusStr.c_str(), // Inserta valores numéricos y texto
                  (chargingState > 0 && chargingState < 5) ? "true" : "false"); // Determina booleano de carga
 
-        client.publish("roomba/estado", jsonBuffer);   // Envía el JSON al broker MQTT
+        client.publish(topic_state, jsonBuffer);   // Envía el JSON al broker MQTT
       }                                                // Fin del bloque de recepción exitosa de 10 bytes
     }                                                  // Fin del temporizador de lectura de sensores
   }                                                    // Fin de la condición de conexión MQTT activa
@@ -333,45 +346,44 @@ void loadSongs() {                             // Función para pre-cargar melod
   Serial2.write(16);                                // Longitud: 16 notas
 
   // Phrase 1 - Compas inicial
-  Serial2.write(55); Serial2.write(32); // Nota: Sol4 | Duración: 32 ticks
-  Serial2.write(55); Serial2.write(32); // Nota: Sol4 | Duración: 32 ticks
-  Serial2.write(55); Serial2.write(32); // Nota: Sol4 | Duración: 32 ticks
-  Serial2.write(51); Serial2.write(24); // Nota: Mi bemol 4 | Duración: 24 ticks
-  Serial2.write(58); Serial2.write(8);  // Nota: Si bemol 4 | Duración: 8 ticks
-  Serial2.write(55); Serial2.write(32); // Nota: Sol4 | Duración: 32 ticks
-  Serial2.write(51); Serial2.write(24); // Nota: Mi bemol 4 | Duración: 24 ticks
-  Serial2.write(58); Serial2.write(8);  // Nota: Si bemol 4 | Duración: 8 ticks
-  Serial2.write(55); Serial2.write(64); // Nota: Sol4 | Duración: 64 ticks (Nota larga)
+  Serial2.write(55); Serial2.write(32); // Sol4
+  Serial2.write(55); Serial2.write(32); // Sol4
+  Serial2.write(55); Serial2.write(32); // Sol4
+  Serial2.write(51); Serial2.write(24); // Mib4
+  Serial2.write(58); Serial2.write(8);  // Sib4
+  Serial2.write(55); Serial2.write(32); // Sol4
+  Serial2.write(51); Serial2.write(24); // Mib4
+  Serial2.write(58); Serial2.write(8);  // Sib4
+  Serial2.write(55); Serial2.write(64); // Sol4
 
   // Phrase 2 - Notas agudas
-  Serial2.write(62); Serial2.write(32); // Nota: Re5 | Duración: 32 ticks
-  Serial2.write(62); Serial2.write(32); // Nota: Re5 | Duración: 32 ticks
-  Serial2.write(62); Serial2.write(32); // Nota: Re5 | Duración: 32 ticks
-  Serial2.write(63); Serial2.write(24); // Nota: Mi bemol 5 | Duración: 24 ticks
-  Serial2.write(58); Serial2.write(8);  // Nota: Si bemol 4 | Duración: 8 ticks
-  Serial2.write(54); Serial2.write(32); // Nota: Fa sostenido 4 | Duración: 32 ticks
-  Serial2.write(51); Serial2.write(24); // Nota: Mi bemol 4 | Duración: 24 ticks
+  Serial2.write(62); Serial2.write(32); // Re5
+  Serial2.write(62); Serial2.write(32); // Re5
+  Serial2.write(62); Serial2.write(32); // Re5
+  Serial2.write(63); Serial2.write(24); // Mib5
+  Serial2.write(58); Serial2.write(8);  // Sib4
+  Serial2.write(54); Serial2.write(32); // Fa#4
+  Serial2.write(51); Serial2.write(24); // Mib4
 
-  delay(50);                             // Pausa para que el robot guarde la canción interiormente
+  delay(50);                             // Pausa para que el robot guarde la canción
 
-  // Canción 1: Super Mario Bros (Tema principal corto)
-  Serial2.write(140);                   // Comando para definir nueva canción
-  Serial2.write(1);                     // Asigna el número 1 a esta melodía
-  Serial2.write(13);                    // Definimos que tendrá 13 pares de datos
+  // Canción 1: Super Mario Bros
+  Serial2.write(140);                   
+  Serial2.write(1);                     
+  Serial2.write(13);                    
 
-  Serial2.write(76); Serial2.write(18); // Nota: Mi5 (669 Hz) | Duración: 18 ticks (1 tick = 1/64 seg)
-  Serial2.write(76); Serial2.write(18); // Nota: Mi5 | Duración: 18 ticks
-  Serial2.write(76); Serial2.write(18); // Nota: Mi5 | Duración: 18 ticks
-  Serial2.write(72); Serial2.write(18); // Nota: Do5 | Duración: 18 ticks
-  Serial2.write(76); Serial2.write(18); // Nota: Mi5 | Duración: 18 ticks
-  Serial2.write(79); Serial2.write(36); // Nota: Sol5 | Duración: 36 ticks (Negra)
-  Serial2.write(67); Serial2.write(36); // Nota: Sol4 | Duración: 36 ticks (Negra)
+  Serial2.write(76); Serial2.write(18); // Mi5
+  Serial2.write(76); Serial2.write(18); // Mi5
+  Serial2.write(76); Serial2.write(18); // Mi5
+  Serial2.write(72); Serial2.write(18); // Do5
+  Serial2.write(76); Serial2.write(18); // Mi5
+  Serial2.write(79); Serial2.write(36); // Sol5
+  Serial2.write(67); Serial2.write(36); // Sol4
 
-  // Notas finales de la intro de Mario
-  Serial2.write(72); Serial2.write(28); // Nota: Do5 | Duración: 28 ticks
-  Serial2.write(67); Serial2.write(28); // Nota: Sol4 | Duración: 28 ticks
-  Serial2.write(64); Serial2.write(28); // Nota: Mi4 | Duración: 28 ticks
-  Serial2.write(69); Serial2.write(28); // Nota: La4 | Duración: 28 ticks
-  Serial2.write(71); Serial2.write(28); // Nota: Si4 | Duración: 28 ticks
-  Serial2.write(70); Serial2.write(18); // Nota: Si bemol 4 | Duración: 18 ticks
+  Serial2.write(72); Serial2.write(28); // Do5
+  Serial2.write(67); Serial2.write(28); // Sol4
+  Serial2.write(64); Serial2.write(28); // Mi4
+  Serial2.write(69); Serial2.write(28); // La4
+  Serial2.write(71); Serial2.write(28); // Si4
+  Serial2.write(70); Serial2.write(18); // Sib4
 }
